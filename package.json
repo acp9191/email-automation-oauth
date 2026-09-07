@@ -1,0 +1,46 @@
+{
+  "name": "personal-automation",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Personal email automation platform: watches Gmail for known events and runs deterministic workflows.",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "start": "node dist/index.js",
+    "cli": "tsx src/index.ts",
+    "auth": "tsx src/index.ts auth",
+    "gmail:test": "tsx src/index.ts gmail:test",
+    "scan": "tsx src/index.ts scan",
+    "run-verizon": "tsx src/index.ts run-verizon",
+    "status": "tsx src/index.ts status",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "watch": "tsx src/index.ts watch",
+    "health": "tsx src/index.ts health",
+    "inspect": "tsx src/index.ts inspect",
+    "verizon:probe": "tsx src/index.ts verizon:probe",
+    "schedule:install": "bash deploy/install-launchd.sh"
+  },
+  "dependencies": {
+    "googleapis": "^178.0.0",
+    "pino": "^9.5.0",
+    "playwright": "^1.63.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^22.9.0",
+    "@typescript-eslint/eslint-plugin": "^8.14.0",
+    "@typescript-eslint/parser": "^8.14.0",
+    "eslint": "^9.15.0",
+    "pino-pretty": "^13.0.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.3",
+    "vitest": "^4.1.11"
+  }
+}

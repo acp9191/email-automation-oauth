@@ -1,0 +1,31 @@
+node_modules/
+dist/
+coverage/
+
+# Secrets and credentials — never commit
+.env
+.env.*
+!.env.example
+secrets/
+*.pem
+*.p12
+
+# OAuth tokens (contain live refresh tokens)
+data/tokens/
+tokens/
+
+# Local state
+data/
+artifacts/
+*.sqlite
+*.sqlite-journal
+*.sqlite-wal
+*.sqlite-shm
+
+playwright-report/
+test-results/
+
+.DS_Store
+
+# Generated per-machine (absolute paths); use deploy/install-launchd.sh
+deploy/*.plist

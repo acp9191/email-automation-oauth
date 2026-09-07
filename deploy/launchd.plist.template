@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>__LABEL__</string>
+
+  <!-- Absolute path: launchd does not read your shell profile, so PATH is minimal. -->
+  <key>ProgramArguments</key>
+  <array>
+    <string>__NODE_BIN__</string>
+    <string>__PROJECT_DIR__/dist/index.js</string>
+    <string>watch</string>
+    <string>--once</string>
+  </array>
+
+  <!-- The app loads .env relative to the working directory. -->
+  <key>WorkingDirectory</key>
+  <string>__PROJECT_DIR__</string>
+
+  <!-- Once a day. Bills arrive monthly, so polling harder buys nothing. If the
+       Mac is asleep at this time, launchd runs the job when it next wakes. -->
+  <key>StartCalendarInterval</key>
+  <dict>
+    <key>Hour</key><integer>__HOUR__</integer>
+    <key>Minute</key><integer>0</integer>
+  </dict>
+
+  <key>RunAtLoad</key>
+  <false/>
+
+  <key>StandardOutPath</key>
+  <string>__PROJECT_DIR__/data/launchd.log</string>
+  <key>StandardErrorPath</key>
+  <string>__PROJECT_DIR__/data/launchd.log</string>
+
+  <key>EnvironmentVariables</key>
+  <dict>
+    <!-- JSON lines in the log file; terminal formatting is for humans. -->
+    <key>LOG_PRETTY</key>
+    <string>false</string>
+  </dict>
+
+  <!-- One-shot, not a resident daemon: nothing runs between checks. -->
+  <key>KeepAlive</key>
+  <false/>
+  <key>ProcessType</key>
+  <string>Background</string>
+</dict>
+</plist>

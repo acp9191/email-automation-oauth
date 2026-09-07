@@ -1,0 +1,11 @@
+node_modules
+dist
+data
+.env
+.env.*
+!.env.example
+tests
+coverage
+.git
+.DS_Store
+browser-profile
