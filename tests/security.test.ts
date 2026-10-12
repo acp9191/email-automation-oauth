@@ -16,6 +16,7 @@ import {
   makePdf,
   makeRepository,
   pdfAttachment,
+  testClock,
 } from './helpers/factories.js';
 
 /**
@@ -41,7 +42,7 @@ function harness(message: ReturnType<typeof makeMessage>, attachments: Record<st
   const repository = makeRepository();
   const notifier = new RecordingNotifier();
   const mailer = new GuardedMailer([config.workEmail], config.dryRun, sender);
-  const runner = new WorkflowRunner(config, repository, reader, mailer, notifier);
+  const runner = new WorkflowRunner(config, repository, reader, mailer, notifier, testClock);
   const workflow = new VerizonBillReimbursementWorkflow(config);
   return { config, sender, runner, workflow, notifier, repository };
 }

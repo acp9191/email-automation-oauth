@@ -64,10 +64,21 @@ const DEFAULT_BODY = [
   'View your bill: https://secure.verizon.com/billing/statement.pdf',
 ].join('\n');
 
+/** Default receipt time of the fixture bill email. */
+export const MESSAGE_DATE = new Date('2026-08-22T14:03:00Z');
+
+/**
+ * A fixed "now" a few days after the fixture email. Detection ignores bills older
+ * than its recency window, so tests that read the real clock fail once the
+ * fixture date ages out.
+ */
+export const TEST_NOW = new Date('2026-08-25T00:00:00Z');
+export const testClock = (): Date => new Date(TEST_NOW);
+
 export function makeMessage(overrides: MessageOverrides = {}): NormalizedMessage {
   const from = overrides.from ?? 'VerizonNotification@verizon.com';
   const subject = overrides.subject ?? 'Your Verizon bill is ready';
-  const internalDate = overrides.internalDate ?? new Date('2026-08-22T14:03:00Z');
+  const internalDate = overrides.internalDate ?? MESSAGE_DATE;
 
   return {
     id: overrides.id ?? 'msg-0001',

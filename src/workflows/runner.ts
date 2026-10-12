@@ -20,6 +20,8 @@ export class WorkflowRunner {
     private readonly reader: GmailReader,
     private readonly mailer: GuardedMailer,
     private readonly notifier: Notifier,
+    /** Injectable so tests are not at the mercy of the real date (detection has a recency window). */
+    private readonly clock: () => Date = () => new Date(),
   ) {}
 
   async run(workflow: Workflow, trigger: WorkflowTrigger): Promise<WorkflowResult> {
@@ -39,7 +41,7 @@ export class WorkflowRunner {
         logger,
         runId,
         dryRun: this.config.dryRun,
-        now: new Date(),
+        now: this.clock(),
       });
     } catch (error) {
       const described = describeError(error);

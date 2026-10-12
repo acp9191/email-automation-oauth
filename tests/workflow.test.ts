@@ -15,6 +15,7 @@ import {
   makePdf,
   makeRepository,
   pdfAttachment,
+  testClock,
 } from './helpers/factories.js';
 import type { NormalizedMessage } from '../src/gmail/types.js';
 
@@ -44,7 +45,7 @@ function harness(options: {
   const repository = makeRepository();
   const notifier = new RecordingNotifier();
   const mailer = new GuardedMailer([config.workEmail], config.dryRun, sender);
-  const runner = new WorkflowRunner(config, repository, reader, mailer, notifier);
+  const runner = new WorkflowRunner(config, repository, reader, mailer, notifier, testClock);
   const workflow = new VerizonBillReimbursementWorkflow(config, undefined, [
     new AttachmentBillSource(),
     new DirectLinkBillSource(),
@@ -206,6 +207,7 @@ describe('failure handling', () => {
       new FakeGmailReader([message]),
       new GuardedMailer([config.workEmail], false, sender),
       notifier,
+      testClock,
     );
     const workflow = new VerizonBillReimbursementWorkflow(config, undefined, [
       new AttachmentBillSource(),
