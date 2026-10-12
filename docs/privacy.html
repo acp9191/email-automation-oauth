@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Privacy Policy</title>
+  <style>
+    :root { color-scheme: light dark; --fg: #1d1d1f; --muted: #5f6368; --bg: #ffffff; --link: #1a5fb4; }
+    @media (prefers-color-scheme: dark) { :root { --fg: #e8e8ea; --muted: #a0a4aa; --bg: #161618; --link: #8ab4f8; } }
+    body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.6 system-ui, -apple-system, sans-serif; }
+    main { max-width: 42rem; margin: 0 auto; padding: 3rem 1rem; }
+    h1 { font-size: 1.75rem; margin: 0 0 0.25rem; }
+    h2 { font-size: 1.15rem; margin-top: 2rem; }
+    .muted { color: var(--muted); font-size: 0.9rem; }
+    a { color: var(--link); }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Privacy Policy</h1>
+    <p class="muted">Personal Email Automation · Last updated October 12, 2026</p>
+
+    <p>
+      Personal Email Automation ("the app") is a private tool that runs only on its owner's
+      computer, for the owner's own Gmail account. It has no other users. This policy describes
+      what the app does with Google user data.
+    </p>
+
+    <h2>Data the app accesses</h2>
+    <ul>
+      <li>
+        <strong>Gmail, read-only</strong> (<code>gmail.readonly</code>). The app searches the inbox
+        with a narrow query for Verizon bill notification emails. It reads those messages' sender,
+        subject, date, body, and attachments to confirm that a message is the monthly bill and to
+        find the billing period.
+      </li>
+      <li>
+        <strong>Gmail, send-only</strong> (<code>gmail.send</code>). The app sends the bill as a PDF
+        attachment to one email address that the owner configures in advance. It also sends the
+        owner a notice if a run fails. It cannot read mail with this permission.
+      </li>
+    </ul>
+    <p>The app does not request permission to delete, modify, or label messages, or to access contacts, calendars, or files.</p>
+
+    <h2>How data is used</h2>
+    <p>
+      The app uses Gmail data only to detect the bill notification and forward the bill to the
+      owner's configured work address. It does not use Gmail data for advertising, profiling,
+      analytics, or training machine-learning models.
+    </p>
+
+    <h2>Storage</h2>
+    <p>Everything the app keeps is stored locally on the owner's computer:</p>
+    <ul>
+      <li>OAuth tokens, in files readable only by the owner's user account.</li>
+      <li>Downloaded bill PDFs.</li>
+      <li>
+        A local database of processing records: Gmail message IDs, billing periods, file names
+        and checksums, run status, and an audit log of emails sent.
+      </li>
+    </ul>
+    <p>
+      The app does not store full email bodies. The data is not uploaded to any server operated
+      by the app or anyone else. The owner can delete all of it at any time by deleting the app's
+      data folder, and can revoke Gmail access at
+      <a href="https://myaccount.google.com/permissions">myaccount.google.com/permissions</a>.
+    </p>
+
+    <h2>Sharing</h2>
+    <p>
+      Google user data is not sold, shared with, or transferred to any third party. The only
+      outbound transfer is the bill email itself, which the app sends from the owner's own account
+      to the owner's own configured address.
+    </p>
+
+    <h2>Google API Services User Data Policy</h2>
+    <p>
+      The app's use and transfer of information received from Google APIs adheres to the
+      <a href="https://developers.google.com/terms/api-services-user-data-policy">Google API Services User Data Policy</a>,
+      including the Limited Use requirements.
+    </p>
+
+    <h2>Changes</h2>
+    <p>If this policy changes, the updated version will be posted on this page with a new date.</p>
+
+    <h2>Contact</h2>
+    <p>Questions about this policy: <a href="https://github.com/acp9191/email-automation-oauth">github.com/acp9191/email-automation-oauth</a>.</p>
+
+    <p class="muted"><a href="index.html">← Home</a></p>
+  </main>
+</body>
+</html>

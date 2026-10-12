@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Personal Email Automation</title>
+  <style>
+    :root { color-scheme: light dark; --fg: #1d1d1f; --muted: #5f6368; --bg: #ffffff; --link: #1a5fb4; }
+    @media (prefers-color-scheme: dark) { :root { --fg: #e8e8ea; --muted: #a0a4aa; --bg: #161618; --link: #8ab4f8; } }
+    body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.6 system-ui, -apple-system, sans-serif; }
+    main { max-width: 42rem; margin: 0 auto; padding: 3rem 1rem; }
+    h1 { font-size: 1.75rem; margin: 0 0 1rem; }
+    p, li { color: var(--fg); }
+    .muted { color: var(--muted); font-size: 0.9rem; }
+    a { color: var(--link); }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Personal Email Automation</h1>
+    <p>
+      Personal Email Automation is a private tool that one person runs on their own computer.
+      It watches its owner's Gmail inbox for the monthly Verizon internet bill notification
+      and forwards a copy of the bill to that owner's work email address for expense reimbursement.
+    </p>
+    <p>It is not offered to the public and has no other users.</p>
+    <h2>Gmail access</h2>
+    <ul>
+      <li><strong>Read-only access</strong> (<code>gmail.readonly</code>) to find the bill notification email.</li>
+      <li><strong>Send-only access</strong> (<code>gmail.send</code>) to email the bill to a single, pre-configured address.</li>
+    </ul>
+    <p>It cannot delete, modify, or label any message.</p>
+    <p><a href="privacy.html">Privacy policy</a></p>
+    <p class="muted">Source and contact: <a href="https://github.com/acp9191/email-automation-oauth">github.com/acp9191/email-automation-oauth</a></p>
+  </main>
+</body>
+</html>
