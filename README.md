@@ -141,8 +141,9 @@ You need a Google OAuth client. This is a one-time setup.
 npm run auth
 ```
 
-This opens your browser twice, because the app asks for **two separate,
-independent consents**:
+This opens one browser tab that walks through **two separate, independent
+consents** back to back. After you approve the first, the tab continues to the
+second on its own:
 
 | Profile | Scope                  | Can do                          | Cannot do                        |
 |---------|------------------------|---------------------------------|----------------------------------|

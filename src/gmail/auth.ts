@@ -109,27 +109,54 @@ function openBrowser(url: string): void {
   });
 }
 
+function page(title: string, body: string, refreshTo?: string): string {
+  const refresh = refreshTo ? `<meta http-equiv="refresh" content="1;url=${refreshTo}">` : '';
+  return `<html><head>${refresh}</head><body style="font-family:system-ui;padding:3rem">
+    <h2>${title}</h2>${body}</body></html>`;
+}
+
 /**
  * Interactive consent via a loopback redirect on 127.0.0.1.
  * The authorization code never leaves the machine.
+ *
+ * Every requested profile is authorized through ONE server in ONE browser tab:
+ * each profile still gets its own consent and its own token, but after the first
+ * consent the tab moves straight on to the next. Starting a fresh server per
+ * profile on the same port broke — the browser reused its keep-alive connection
+ * to the previous server, whose handler then rejected the next profile's state.
  */
 export async function authorizeInteractive(
   config: Config,
-  profile: ScopeProfile,
+  profiles: ScopeProfile[],
 ): Promise<void> {
-  const log = childLogger({ component: 'gmail.auth', profile });
+  const log = childLogger({ component: 'gmail.auth' });
   const client = newClient(config);
-  const state = crypto.randomBytes(16).toString('hex');
 
-  const url = client.generateAuthUrl({
-    access_type: 'offline',
-    prompt: 'consent',
-    scope: SCOPES[profile],
-    state,
+  // One single-use state per profile; the state is what tells us which consent came back.
+  const pending = profiles.map((profile) => {
+    const state = crypto.randomBytes(16).toString('hex');
+    const url = client.generateAuthUrl({
+      access_type: 'offline',
+      prompt: 'consent',
+      scope: SCOPES[profile],
+      state,
+    });
+    return { profile, state, url };
   });
 
-  const code = await new Promise<string>((resolve, reject) => {
+  const codes = await new Promise<Map<ScopeProfile, string>>((resolve, reject) => {
+    const received = new Map<ScopeProfile, string>();
+
+    const finish = (outcome: () => void): void => {
+      server.close();
+      server.closeAllConnections();
+      outcome();
+    };
+
     const server = http.createServer((req, res) => {
+      // Never leave a keep-alive socket behind for the browser to reuse.
+      res.setHeader('connection', 'close');
+
       const requestUrl = new URL(req.url ?? '/', `http://127.0.0.1:${config.google.oauthPort}`);
       if (requestUrl.pathname !== '/oauth2callback') {
         res.writeHead(404).end('Not found');
@@ -139,53 +166,81 @@ export async function authorizeInteractive(
       const returnedCode = requestUrl.searchParams.get('code');
       const error = requestUrl.searchParams.get('error');
 
-      if (error) {
-        res.writeHead(400, { 'content-type': 'text/plain' }).end(`Authorization failed: ${error}`);
-        server.close();
-        reject(new AuthError(`Google returned an error: ${error}`));
+      // A callback carrying an unknown or already-used state (a reloaded tab, an old
+      // URL from scrollback) is rejected but does not end the flow — otherwise any
+      // stale redirect would abort before the real consent arrives.
+      const entry = pending.find((p) => p.state === returnedState && !received.has(p.profile));
+      if (!entry) {
+        log.warn('ignored callback with unknown or reused OAuth state (stale or foreign redirect)');
+        res.writeHead(400, { 'content-type': 'text/html' }).end(
+          page(
+            'This link is stale',
+            '<p>It is not from the authorization currently in progress. Close this tab and use the browser tab that <code>npm run auth</code> opened most recently.</p>',
+          ),
+        );
         return;
       }
-      if (returnedState !== state) {
-        res.writeHead(400, { 'content-type': 'text/plain' }).end('State mismatch.');
-        server.close();
-        reject(new AuthError('OAuth state mismatch — aborting.'));
+      if (error) {
+        res.writeHead(400, { 'content-type': 'text/plain' }).end(`Authorization failed: ${error}`);
+        finish(() => reject(new AuthError(`Google returned an error for "${entry.profile}": ${error}`)));
         return;
       }
       if (!returnedCode) {
         res.writeHead(400, { 'content-type': 'text/plain' }).end('Missing code.');
-        server.close();
-        reject(new AuthError('No authorization code returned.'));
+        finish(() => reject(new AuthError(`No authorization code returned for "${entry.profile}".`)));
+        return;
+      }
+
+      received.set(entry.profile, returnedCode);
+      log.info({ profile: entry.profile }, 'consent received');
+      const next = pending.find((p) => !received.has(p.profile));
+      const scopeLine = `<p>Scope: <code>${SCOPES[entry.profile].join(' ')}</code></p>`;
+
+      if (next) {
+        res.writeHead(200, { 'content-type': 'text/html' }).end(
+          page(
+            `Authorized: ${entry.profile} profile`,
+            `${scopeLine}<p>Continuing to the separate <strong>${next.profile}</strong> consent&hellip;</p>
+             <p><a href="${next.url}">Continue now</a></p>`,
+            next.url,
+          ),
+        );
         return;
       }
 
       res.writeHead(200, { 'content-type': 'text/html' }).end(
-        `<html><body style="font-family:system-ui;padding:3rem">
-           <h2>Authorized: ${profile} profile</h2>
-           <p>Scope: <code>${SCOPES[profile].join(' ')}</code></p>
-           <p>You can close this tab and return to the terminal.</p>
-         </body></html>`,
+        page(
+          `Authorized: ${profiles.join(' + ')}`,
+          `${scopeLine}<p>You can close this tab and return to the terminal.</p>`,
+        ),
       );
-      server.close();
-      resolve(returnedCode);
+      finish(() => resolve(received));
     });
 
     server.on('error', reject);
     server.listen(config.google.oauthPort, '127.0.0.1', () => {
       log.info({ port: config.google.oauthPort }, 'waiting for Google consent redirect');
+      const first = pending[0]!;
       // eslint-disable-next-line no-console
-      console.log(`\nOpen this URL to authorize the "${profile}" profile:\n\n${url}\n`);
-      openBrowser(url);
+      console.log(
+        `\nOpening your browser to authorize: ${profiles.join(', ')}` +
+          (profiles.length > 1 ? ' (one tab; each consent follows the previous)' : '') +
+          `\nIf it does not open, visit:\n\n${first.url}\n`,
+      );
+      openBrowser(first.url);
     });
   });
 
-  const { tokens } = await client.getToken(code);
-  if (!tokens.refresh_token) {
-    throw new AuthError(
-      'Google did not return a refresh token. Revoke the app at https://myaccount.google.com/permissions and re-run auth.',
-    );
+  for (const { profile } of pending) {
+    const { tokens } = await client.getToken(codes.get(profile)!);
+    if (!tokens.refresh_token) {
+      throw new AuthError(
+        'Google did not return a refresh token. Revoke the app at https://myaccount.google.com/permissions and re-run auth.',
+      );
+    }
+    writeToken(config, profile, tokens as Record<string, unknown>);
+    log.info({ profile, file: tokenPath(config, profile) }, 'stored credentials (0600)');
   }
-  writeToken(config, profile, tokens as Record<string, unknown>);
-  log.info({ file: tokenPath(config, profile) }, 'stored credentials (0600)');
 }
 
 /** Non-secret summary of what is currently authorized, for `status` output. */

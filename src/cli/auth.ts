@@ -20,10 +20,11 @@ export async function authCommand(profileArg: string | undefined): Promise<void>
   }
   console.log('');
 
+  await authorizeInteractive(config, profiles);
   for (const profile of profiles) {
-    await authorizeInteractive(config, profile);
-    console.log(`  ✓ ${profile} profile authorized\n`);
+    console.log(`  ✓ ${profile} profile authorized`);
   }
+  console.log('');
 
   console.log('  Current credential state:');
   for (const entry of describeCredentials(config)) {
